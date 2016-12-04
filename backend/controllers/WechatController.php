@@ -109,7 +109,7 @@ class WechatController extends Controller
                             }
                             $contentStr = $str_final;
 			                break;
-                        case strpos($keyword, '天气'):
+                        case (strpos($keyword, '天气') != false) :
                             if (substr($keyword, 0, 6) == "宁波") {
                                 $t = file_get_contents("http://m.ip138.com/31/ningbo/yinzhou/tianqi/");
                             } elseif (substr($keyword, 0, 6) == "嘉兴") {
