@@ -95,9 +95,9 @@ class WechatController extends Controller
                             $contentStr = "大熊弟你是有多喜欢在下。。还输在下名字啊？ 哈哈哈";
                             break;
                         case substr($keyword, 0, 6) == "快递":
-			    $kd_num = substr($keyword, 6);
-			    $url = "http://biz.trace.ickd.cn/auto/" . $kd_num . "?mailNo=" . $kd_num . "&spellName=&exp-textName=&ts=123456&enMailNo=123456789&callback=_jqjsp&_1480785159090=";
-			    $str = file_get_contents($url);
+                            $kd_num = substr($keyword, 6);
+                            $url = "http://biz.trace.ickd.cn/auto/" . $kd_num . "?mailNo=" . $kd_num . "&spellName=&exp-textName=&ts=123456&enMailNo=123456789&callback=_jqjsp&_1480785159090=";
+                            $str = file_get_contents($url);
                             $tmp_str = strstr($str, '{');
                             $newstr = substr($tmp_str,0,strlen($tmp_str)-1);
                             $tmp_cont = json_decode($newstr);
@@ -108,7 +108,47 @@ class WechatController extends Controller
 
                             }
                             $contentStr = $str_final;
-			    break;
+			                break;
+                        case strpos($keyword, '天气'):
+                            if (substr($keyword, 0, 6) == "宁波") {
+                                $t = file_get_contents("http://m.ip138.com/31/ningbo/yinzhou/tianqi/");
+                            } elseif (substr($keyword, 0, 6) == "嘉兴") {
+                                $t = file_get_contents("http://m.ip138.com/31/jiaxing/haiyan/tianqi/");
+                            } else {
+                                $contentStr = "目前只支持宁波天气和嘉兴天气";
+                                break;
+                            }
+                            $rule = '/<ul class="query-hd">.+<\/ul>/';
+                            preg_match($rule, $t, $result);
+                            $re = '/<li>.+<\/li>/';
+                            preg_match($re, $result[0], $match);
+
+                            $regex0 = "/<div class=\"date\">.*?<\/div>/";
+                            preg_match_all($regex0, $match[0], $date);
+                            $re_date = preg_replace("/<div class=\"date\">/", '', $date[0]);
+                            $re_date = preg_replace("/<\/div>/", '', $re_date);
+                            $re_date = preg_replace("/<font color=\"red\">/", '', $re_date);
+                            $re_date = preg_replace("/<\/font>/", '', $re_date);
+
+                            $regex1 = "/<div class=\"phrase\">.*?<\/div>/";
+                            preg_match_all($regex1, $match[0], $weather);
+                            $delete_re = "/<img.*?>/";
+                            $re_weacher = preg_replace($delete_re, '', $weather[0]);
+                            $re_weacher = preg_replace("/<div class=\"phrase\">/", '', $re_weacher);
+                            $re_weacher = preg_replace("/<\/div>/", '', $re_weacher);
+
+
+                            $regex2 = "/<div class=\"temperature\">.*?<\/div>/";
+                            preg_match_all($regex2, $match[0], $temperature);
+                            $re_temperature = preg_replace("/<div class=\"temperature\">/", '', $temperature[0]);
+                            $re_temperature = preg_replace("/<\/div>/", '', $re_temperature);
+
+                            $con = "";
+                            foreach ($re_date as $k => $v) {
+                                $con .= $v.$re_weacher[$k].$re_temperature[$k]. "\n\n";
+                            }
+                            $contentStr = $con;
+                            break;
                         case "test":
                             $contentStr = "没啥 自己测试用用。";
                             break;
